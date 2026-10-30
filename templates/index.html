@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChurnGuard Enterprise — Customer Intelligence Dashboard</title>
+  <meta name="description" content="Enterprise-grade customer churn prediction dashboard powered by Random Forest ML with SHAP explainability and revenue-at-risk analysis." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">
+      <span class="logo-brand">ChurnGuard</span>
+      <span class="logo-sub">Enterprise</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" id="nav-overview" href="#" onclick="showSection('overview')">
+      <span class="nav-icon">📊</span><span>Overview</span>
+    </a>
+    <a class="nav-item" id="nav-predict" href="#" onclick="showSection('predict')">
+      <span class="nav-icon">🔮</span><span>Predict</span>
+    </a>
+    <a class="nav-item" id="nav-toprisk" href="#" onclick="showSection('toprisk')">
+      <span class="nav-icon">🔥</span><span>Top Risk</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="model-badge">
+      <div class="badge-dot"></div>
+      <span>RF Model Active</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main" id="main-content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title" id="page-title">Overview Dashboard</h1>
+      <span class="page-sub" id="page-sub">Live customer churn intelligence</span>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><div class="pulse"></div>Live</div>
+    </div>
+  </header>
+
+  <!-- ─── SECTION: OVERVIEW ─── -->
+  <section class="section active" id="section-overview">
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid" id="kpi-grid">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-label">Total Customers</div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-critical">—</div>
+          <div class="kpi-label">Critical Risk</div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-amber">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-rev-risk">—</div>
+          <div class="kpi-label">Revenue at Risk</div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">📉</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="kpi-churn">—</div>
+          <div class="kpi-label">Avg Churn Prob</div>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+    </div>
+
+    <!-- Risk Distribution -->
+    <div class="panel-row">
+      <div class="panel panel-lg">
+        <div class="panel-header">
+          <h2 class="panel-title">Risk Distribution</h2>
+        </div>
+        <div class="panel-body">
+          <div class="risk-bars" id="risk-bars">
+            <div class="risk-bar-row" id="bar-critical">
+              <span class="risk-label risk-critical">Critical</span>
+              <div class="risk-track"><div class="risk-fill fill-critical" style="width:0%"></div></div>
+              <span class="risk-count" id="cnt-critical">—</span>
+            </div>
+            <div class="risk-bar-row" id="bar-high">
+              <span class="risk-label risk-high">High</span>
+              <div class="risk-track"><div class="risk-fill fill-high" style="width:0%"></div></div>
+              <span class="risk-count" id="cnt-high">—</span>
+            </div>
+            <div class="risk-bar-row" id="bar-medium">
+              <span class="risk-label risk-medium">Medium</span>
+              <div class="risk-track"><div class="risk-fill fill-medium" style="width:0%"></div></div>
+              <span class="risk-count" id="cnt-medium">—</span>
+            </div>
+            <div class="risk-bar-row" id="bar-low">
+              <span class="risk-label risk-low">Low</span>
+              <div class="risk-track"><div class="risk-fill fill-low" style="width:0%"></div></div>
+              <span class="risk-count" id="cnt-low">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-sm">
+        <div class="panel-header">
+          <h2 class="panel-title">Revenue Summary</h2>
+        </div>
+        <div class="panel-body">
+          <div class="rev-stat">
+            <span class="rev-label">Total Portfolio</span>
+            <span class="rev-value rev-green" id="stat-total-rev">—</span>
+          </div>
+          <div class="rev-divider"></div>
+          <div class="rev-stat">
+            <span class="rev-label">At Risk</span>
+            <span class="rev-value rev-red" id="stat-rev-risk">—</span>
+          </div>
+          <div class="rev-divider"></div>
+          <div class="rev-stat">
+            <span class="rev-label">Churn Rate</span>
+            <span class="rev-value rev-amber" id="stat-churn-rate">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── SECTION: PREDICT ─── -->
+  <section class="section" id="section-predict">
+    <div class="predict-layout">
+
+      <!-- Search Panel -->
+      <div class="search-panel">
+        <div class="search-header">
+          <h2>Customer Lookup</h2>
+          <p>Enter a Customer ID to get full churn analysis</p>
+        </div>
+        <div class="search-box">
+          <input
+            type="number"
+            id="customer-input"
+            class="search-input"
+            placeholder="e.g. 15361"
+            onkeydown="if(event.key==='Enter') runPrediction()"
+          />
+          <button class="search-btn" onclick="runPrediction()" id="predict-btn">
+            <span id="predict-btn-text">Analyse</span>
+          </button>
+        </div>
+        <div class="search-hint">Try: 15361 · 17581 · 17428 · 16422</div>
+      </div>
+
+      <!-- Result Panel (hidden until prediction) -->
+      <div class="result-panel" id="result-panel" style="display:none">
+
+        <!-- Customer Header -->
+        <div class="cust-header">
+          <div class="cust-avatar" id="cust-avatar">?</div>
+          <div class="cust-info">
+            <div class="cust-id" id="cust-id-display">—</div>
+            <div class="cust-segment" id="cust-segment">—</div>
+            <div class="cust-country" id="cust-country">—</div>
+          </div>
+          <div class="cust-badge" id="risk-badge">—</div>
+        </div>
+
+        <!-- Churn Gauge -->
+        <div class="gauge-container">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 200 110">
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%"   stop-color="#22c55e"/>
+                  <stop offset="50%"  stop-color="#f59e0b"/>
+                  <stop offset="100%" stop-color="#ef4444"/>
+                </linearGradient>
+              </defs>
+              <!-- Background arc -->
+              <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1e293b" stroke-width="18" stroke-linecap="round"/>
+              <!-- Colored arc -->
+              <path id="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gaugeGrad)" stroke-width="18" stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+              <!-- Needle -->
+              <line id="gauge-needle" x1="100" y1="100" x2="100" y2="28" stroke="#fff" stroke-width="3" stroke-linecap="round" transform="rotate(0, 100, 100)"/>
+              <circle cx="100" cy="100" r="6" fill="#fff"/>
+            </svg>
+            <div class="gauge-value" id="gauge-value">0%</div>
+            <div class="gauge-label">Churn Probability</div>
+          </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">💷</div>
+            <div class="stat-value" id="s-revenue">—</div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card stat-danger">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value" id="s-risk-rev">—</div>
+            <div class="stat-label">Revenue at Risk</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-value" id="s-orders">—</div>
+            <div class="stat-label">Total Orders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="s-products">—</div>
+            <div class="stat-label">Unique Products</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value" id="s-recency">—</div>
+            <div class="stat-label">Days Since Last Order</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📈</div>
+            <div class="stat-value" id="s-aov">—</div>
+            <div class="stat-label">Avg Order Value</div>
+          </div>
+        </div>
+
+        <!-- Retention -->
+        <div class="retention-block">
+          <div class="retention-row">
+            <div class="retention-item">
+              <span class="ret-label">Priority</span>
+              <span class="ret-value" id="ret-priority">—</span>
+            </div>
+            <div class="retention-item">
+              <span class="ret-label">Priority Score</span>
+              <span class="ret-value" id="ret-score">—</span>
+            </div>
+          </div>
+          <div class="action-box" id="action-box">
+            <span class="action-icon">🎯</span>
+            <span class="action-text" id="action-text">—</span>
+          </div>
+        </div>
+
+        <!-- SHAP Explanations -->
+        <div class="shap-block">
+          <h3 class="shap-title">🧠 Top Churn Drivers (SHAP)</h3>
+          <p class="shap-sub">How each feature pushes the churn probability</p>
+          <div class="shap-bars" id="shap-bars"></div>
+        </div>
+
+      </div>
+
+      <!-- Error state -->
+      <div class="error-state" id="error-state" style="display:none">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg" id="error-msg">Customer not found.</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── SECTION: TOP RISK ─── -->
+  <section class="section" id="section-toprisk">
+    <div class="panel panel-full">
+      <div class="panel-header">
+        <h2 class="panel-title">🔥 Top 10 Customers by Revenue at Risk</h2>
+        <p class="panel-sub">Ranked by total revenue × churn probability</p>
+      </div>
+      <div class="panel-body">
+        <div class="table-wrap">
+          <table class="risk-table" id="risk-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Customer ID</th>
+                <th>Segment</th>
+                <th>Total Revenue</th>
+                <th>Churn Prob</th>
+                <th>Revenue at Risk</th>
+                <th>Risk</th>
+                <th>Priority</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="risk-table-body">
+              <tr><td colspan="9" class="loading-cell">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
